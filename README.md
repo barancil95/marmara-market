@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Marmara Market
 
-## Getting Started
+Marmara Üniversitesi öğrencilerine özel kampüs pazar yeri. Sadece
+`@marun.edu.tr` e-postasıyla kayıt olunabilir.
 
-First, run the development server:
+## Özellikler
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- E-posta OTP ile giriş (şifresiz, domain kısıtlı)
+- İlan verme (fotoğraflı), kategori/metin ile arama
+- Alıcı/satıcı arası gerçek zamanlı mesajlaşma
+- "Satıldı" olarak işaretleme (ödeme uygulama dışında, kampüste yapılır)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Teknoloji
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Next.js (App Router, TypeScript) + PostgreSQL + AWS S3 (fotoğraflar) + AWS SES
+(OTP e-postaları) + Socket.io (mesajlaşma). Tamamı self-hosted; Supabase/Stripe
+gibi ücretli SaaS servisleri kullanılmıyor. Detaylar için `.claude/plans` içindeki
+plana bakabilirsin; canlıya alma adımları için [DEPLOY.md](./DEPLOY.md).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Yerel Geliştirme
 
-## Learn More
+1. Bağımlılıkları kur: `npm install`
+2. `.env.local` dosyasını doldur (örnek: `.env.example`). Yerelde AWS
+   olmadan da geliştirebilirsin: S3 yerine dosyalar `public/uploads`'a
+   yazılır, SES yerine OTP kodu terminale basılır (`src/lib/storage.ts`,
+   `src/app/api/auth/request-otp/route.ts` — sadece `NODE_ENV !== "production"`
+   iken).
+3. Yerel bir Postgres başlat, örn:
+   ```bash
+   docker run -d --name marmara-postgres-dev \
+     -e POSTGRES_USER=marmara -e POSTGRES_PASSWORD=devpass -e POSTGRES_DB=marmara \
+     -p 127.0.0.1:5433:5432 \
+     -v "$(pwd)/infra/init.sql:/docker-entrypoint-initdb.d/init.sql:ro" \
+     postgres:16-alpine
+   ```
+4. `npm run dev` — bu, Next.js (`:3000`) ve mesajlaşma sunucusunu (`:3001`)
+   aynı anda başlatır.
 
-To learn more about Next.js, take a look at the following resources:
+## Mimari Notu
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Next.js ve Socket.io **iki ayrı process** olarak çalışır (`socket-server.ts`).
+Next.js API route'ları yeni bir mesaj kaydettiğinde, mesajlaşma sunucusuna
+küçük bir dahili HTTP isteğiyle (`INTERNAL_EMIT_SECRET` ile korunan
+`/internal/emit`) haber verir, o da Socket.io üzerinden ilgili kullanıcılara
+anlık iletir. Bu ayrım, Next.js'in kendi sunucu dahili modüllerinin `tsx` ile
+aynı process'te custom server olarak çalıştırılınca çakışmasını (bilinen bir
+uyumluluk sorunu) önlemek için tercih edildi.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Bkz. [DEPLOY.md](./DEPLOY.md) — AWS EC2 üzerinde Docker Compose ile canlıya alma.
