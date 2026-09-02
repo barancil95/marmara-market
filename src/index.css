@@ -1,0 +1,98 @@
+:root {
+  --navy: #003178;
+  --navy2: #0d47a1;
+  --yel: #fbc02d;
+  --ink: #1c1b1b;
+  --muted: #737783;
+  --slate: #434652;
+  --surface: #f6f3f2;
+  --border: #e5e2e1;
+  --page-bg: #fcf9f8;
+
+  /* Uygulama kabuğunun geniş ekrandaki azami genişliği */
+  --shell-width: 480px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--ink);
+  /* Kabuğun dışında kalan alan; mobilde zaten görünmez */
+  background: #eceaea;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+}
+
+/* Mobil-öncelikli tasarımın oranlarını korumak için kabuk sınırlandırılır,
+   ama telefon çerçevesi yok — gerçek bir uygulama gibi tam yüksekliktedir. */
+.app-shell {
+  width: 100%;
+  max-width: var(--shell-width);
+  min-height: 100dvh;
+  background: var(--page-bg);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
+}
+
+@media (min-width: 481px) {
+  .app-shell {
+    box-shadow: 0 0 40px -12px rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* Ekran içeriği; alt navigasyon sticky olduğu için burada taşma gizlenmez */
+.app-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none !important;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+input,
+textarea {
+  font-family: inherit;
+}
+
+/* Yatay kaydırılan şeritlerde (kategoriler vb.) kaydırma çubuğu gizlenir */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
